@@ -1,4 +1,3 @@
-
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -10,21 +9,33 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const { data } = await supabase.auth.getSession()
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
 
-      if (!data.session) {
+      if (!session) {
         router.replace('/login')
       } else {
         setLoading(false)
       }
     }
 
-    checkAuth()
+    checkSession()
+
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        if (!session) {
+          router.replace('/login')
+        }
+      }
+    )
+
+    return () => {
+      listener.subscription.unsubscribe()
+    }
   }, [router])
 
   if (loading) {
-    return <div className="p-6">טוען...</div>
+    return <div className="p-4">טוען...</div>
   }
 
   return <>{children}</>
