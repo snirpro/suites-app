@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabaseClient'
+import { createSupabaseBrowser } from '@/lib/supabaseBrowser'
+
 import { useRouter } from 'next/navigation'
 
 type Suite = {
@@ -15,10 +16,11 @@ export default function SuitesManager() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
-
+  const supabase = createSupabaseBrowser()
 
   const loadSuites = async () => {
     setLoading(true)
+
     const { data, error } = await supabase
       .from('suites')
       .select('id, name')

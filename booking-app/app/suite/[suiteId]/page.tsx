@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation'
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from '@fullcalendar/interaction'
-import { supabase } from '@/lib/supabaseClient'
+import { createSupabaseBrowser } from '@/lib/supabaseBrowser'
 import AuthGuard from '@/app/components/AuthGuard'
 import AppHeader from '@/app/components/AppHeader'
 
@@ -99,6 +99,7 @@ export default function SuiteCalendarPage() {
     mq.addEventListener?.('change', handler)
     return () => mq.removeEventListener?.('change', handler)
   }, [])
+  const supabase = createSupabaseBrowser()
 
   const loadBookings = async () => {
     const { data, error } = await supabase

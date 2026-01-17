@@ -1,10 +1,16 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabaseClient'
+import { createSupabaseBrowser } from '@/lib/supabaseBrowser'
+
+
+
+
 
 export default function AppHeader() {
   const router = useRouter()
+  const supabase = createSupabaseBrowser()
+
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
