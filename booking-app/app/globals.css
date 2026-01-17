@@ -27,3 +27,31 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+/* =========================
+   FullCalendar – Mobile Fix
+========================= */
+
+.fc {
+  font-size: 12px;
+}
+
+.fc-daygrid-event {
+  padding: 2px 4px;
+  border-radius: 6px;
+  white-space: normal;
+  min-height: 20px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fc-daygrid-day-number {
+  font-size: 11px;
+}
+
+@media (max-width: 640px) {
+  .fc-toolbar-title {
+    font-size: 14px;
+  }
+}
+
+

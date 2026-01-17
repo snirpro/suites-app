@@ -187,19 +187,35 @@ export default function SuiteCalendarPage() {
           <div className="rounded-2xl border border-black/10 overflow-hidden">
             <FullCalendar
               plugins={[dayGridPlugin, interactionPlugin]}
-              initialView={isMobile ? 'dayGridWeek' : 'dayGridMonth'}
+              initialView="dayGridMonth"
+
+              /* ❌ מונע שינוי view אוטומטי במובייל */
+              handleWindowResize={false}
+
               selectable
               displayEventTime={false}
+
               events={calendarEvents}
-              height={isMobile ? 'auto' : 'auto'}
+
+              /* ✅ גובה חכם למובייל */
+              height="auto"
+              contentHeight="auto"
+              expandRows={true}
+
               headerToolbar={{
                 left: 'prev,next',
                 center: 'title',
-                right: isMobile ? '' : ''
+                right: ''
               }}
-              dayMaxEvents={isMobile ? 2 : true}
+
+              /* ✅ חודש אמיתי */
               fixedWeekCount={false}
+
+              /* ✅ לא לחתוך אירועים */
+              dayMaxEventRows={2}
+
               longPressDelay={250}
+
               select={(info) => {
                 const checkinDate = info.startStr
                 const checkoutDate = new Date(info.startStr)
@@ -219,6 +235,7 @@ export default function SuiteCalendarPage() {
                 setEditingBookingId(null)
                 setShowForm(true)
               }}
+
               eventClick={(info) => {
                 const booking = bookings.find((b) => b.id === info.event.id)
                 if (!booking) return
@@ -226,6 +243,7 @@ export default function SuiteCalendarPage() {
                 setShowForm(false)
               }}
             />
+
           </div>
         </div>
 
