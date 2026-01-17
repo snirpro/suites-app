@@ -7,6 +7,7 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import { supabase } from '@/lib/supabaseClient'
 import AuthGuard from '@/app/components/AuthGuard'
+import AppHeader from '@/app/components/AppHeader'
 
 function formatUTC(isoString: string) {
   const d = new Date(isoString)
@@ -144,11 +145,11 @@ export default function SuiteCalendarPage() {
 
   return (
     <AuthGuard>
+        <AppHeader />
       <div className="min-h-screen bg-white">
         {/* Header */}
         <div className="sticky top-0 z-10 bg-white/90 backdrop-blur border-b border-black/10">
           <div className="px-3 sm:px-6 py-3 flex items-center justify-between">
-            <h1 className="text-lg sm:text-xl font-bold">יומן הזמנות</h1>
 
             {/* Quick Add (mobile friendly) */}
             <button
