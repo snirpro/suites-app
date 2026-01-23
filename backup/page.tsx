@@ -8,7 +8,6 @@ import interactionPlugin from '@fullcalendar/interaction'
 import { createSupabaseBrowser } from '@/lib/supabaseBrowser'
 import AuthGuard from '@/app/components/AuthGuard'
 import AppHeader from '@/app/components/AppHeader'
-import BookingDetailsModal from '@/app/components/BookingDetailsModal'
 
 function formatUTC(isoString: string) {
   const d = new Date(isoString)
@@ -525,37 +524,127 @@ export default function SuiteCalendarPage() {
 
         {/* DETAILS MODAL (Mobile bottom sheet + desktop modal) */}
         {selectedBooking && (
-          <BookingDetailsModal
-            booking={selectedBooking}
-            onClose={() => setSelectedBooking(null)}
-            onEdit={(b) => {
-              setEditingBookingId(b.id)
-              setNewBooking({
-                customer_name: b.customer_name,
-                customer_phone: b.customer_phone,
-                checkin_at: b.checkin_at,
-                checkout_at: b.checkout_at,
-                guests: b.guests,
-                price: b.price,
-                notes: b.notes || ''
-              })
-              setSelectedBooking(null)
-              setShowForm(true)
-            }}
-            onCancel={async (b) => {
-              await supabase.from('bookings').update({ status: 'canceled' }).eq('id', b.id)
-              setSelectedBooking(null)
-              loadBookings()
-            }}
-            onDelete={async (b) => {
-              await supabase.from('bookings').delete().eq('id', b.id)
-              setSelectedBooking(null)
-              loadBookings()
-            }}
-            onWhatsApp={openWhatsApp}
-          />
-)}
+          <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center">
+            <div className="bg-white w-full sm:max-w-md sm:rounded-2xl rounded-t-3xl shadow-xl max-h-[92vh] sm:max-h-[85vh] overflow-hidden">
+              <div className="px-4 py-3 border-b border-black/10 flex items-center justify-between">
+                <h2 className={sectionTitleClass}>פרטי הזמנה</h2>
+                <button
+                  className="rounded-xl border border-black/15 px-3 py-2 text-sm"
+                  onClick={() => setSelectedBooking(null)}
+                >
+                  סגור
+                </button>
+              </div>
 
+              <div className="p-4 space-y-2 overflow-y-auto max-h-[calc(92vh-170px)] sm:max-h-[calc(85vh-170px)]">
+                <div className="rounded-2xl border border-black/10 p-3 space-y-1">
+                  <div className="text-sm">
+                    <b>שם:</b> {selectedBooking.customer_name}
+                  </div>
+                  <div className="text-sm">
+                    <b>טלפון:</b> {selectedBooking.customer_phone}
+                  </div>
+                  <div className="text-sm">
+                    <b>כניסה:</b> {formatUTC(selectedBooking.checkin_at)}
+                  </div>
+                  <div className="text-sm">
+                    <b>יציאה:</b> {formatUTC(selectedBooking.checkout_at)}
+                  </div>
+                  <div className="text-sm">
+                    <b>אורחים:</b> {selectedBooking.guests}
+                  </div>
+                  <div className="text-sm">
+                    <b>מחיר:</b> ₪{selectedBooking.price}
+                  </div>
+
+                  {selectedBooking.notes && (
+                    <div className="border-t border-black/10 pt-2 text-sm">
+                      <b>הערות:</b>
+                      <div className="mt-1 whitespace-pre-wrap">{selectedBooking.notes}</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="px-4 py-3 border-t border-black/10 bg-white">
+                <div className="flex flex-col sm:flex-row gap-2">
+                  {selectedBooking.status === 'active' && (
+                    <>
+                      <button
+                        className="w-full sm:w-auto rounded-xl bg-green-600 text-white px-4 py-3 text-base sm:text-sm font-semibold"
+                        onClick={() => openWhatsApp(selectedBooking)}
+                      >
+                        שלח לוואטסאפ
+                      </button>
+
+                      <button
+                        className="w-full sm:w-auto rounded-xl bg-blue-600 text-white px-4 py-3 text-base sm:text-sm font-semibold"
+                        onClick={() => {
+                          setEditingBookingId(selectedBooking.id)
+                          setNewBooking({
+                            customer_name: selectedBooking.customer_name,
+                            customer_phone: selectedBooking.customer_phone,
+                            checkin_at: selectedBooking.checkin_at,
+                            checkout_at: selectedBooking.checkout_at,
+                            guests: selectedBooking.guests,
+                            price: selectedBooking.price,
+                            notes: selectedBooking.notes || ''
+                          })
+                          setSelectedBooking(null)
+                          setShowForm(true)
+                        }}
+                      >
+                        ערוך הזמנה
+                      </button>
+
+                      <button
+                        className="w-full sm:w-auto rounded-xl bg-red-600 text-white px-4 py-3 text-base sm:text-sm font-semibold"
+                        onClick={async () => {
+                          await supabase.from('bookings').update({ status: 'canceled' }).eq('id', selectedBooking.id)
+                          setSelectedBooking(null)
+                          loadBookings()
+                        }}
+                      >
+                        בטל הזמנה
+                      </button>
+                    </>
+                  )}
+
+                  {selectedBooking.status === 'canceled' && (
+                    <>
+                      <button
+                        className="w-full sm:w-auto rounded-xl bg-red-800 text-white px-4 py-3 text-base sm:text-sm font-semibold"
+                        onClick={async () => {
+                          const confirmDelete = window.confirm('⚠️ האם אתה בטוח שברצונך למחוק את ההזמנה לצמיתות?')
+                          if (!confirmDelete) return
+
+                          const { error } = await supabase.from('bookings').delete().eq('id', selectedBooking.id)
+
+                          if (error) {
+                            alert('❌ שגיאה במחיקת ההזמנה')
+                            return
+                          }
+
+                          setSelectedBooking(null)
+                          loadBookings()
+                        }}
+                      >
+                        מחק הזמנה
+                      </button>
+
+                      <button
+                        className="w-full sm:w-auto rounded-xl border border-black/15 px-4 py-3 text-base sm:text-sm font-semibold"
+                        onClick={() => setSelectedBooking(null)}
+                      >
+                        סגור
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </AuthGuard>
   )
